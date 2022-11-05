@@ -36,7 +36,7 @@ def reconstruction_loss(x, x_recon, distribution):
         recon_loss = None
 
     return recon_loss
-    
+
 
 def kl_divergence(mu, logvar):
     batch_size = mu.size(0)
@@ -52,7 +52,7 @@ def kl_divergence(mu, logvar):
     mean_kld = klds.mean(1).mean(0, True)
 
     return total_kld, dimension_wise_kld
-    
+
 
 class Solver(object):
     def __init__(self, args):
@@ -62,7 +62,7 @@ class Solver(object):
             self.device = torch.device('cuda', args.gpu)
         else:
             self.device = torch.device('cpu')
-        
+
         self.max_iter = args.max_iter
         self.global_iter = 0
 
@@ -82,21 +82,24 @@ class Solver(object):
         if args.dataset.lower() == 'mnist':
             self.nc = 1
             self.decoder_dist = 'bernoulli'
+            training_data = torchvision.datasets.MNIST("/.data", True, transform=ToTensor(), download=True)
         elif args.dataset.lower() == 'svhn':
             self.nc = 3
             self.decoder_dist = 'gaussian'
+            training_data = torchvision.datasets.SVHN("/.data", True, transform=ToTensor(), download=True)
         elif args.dataset.lower() == 'cifar10':
             self.nc = 3
             self.decoder_dist = 'gaussian'
+            training_data = torchvision.datasets.CIFAR10("/.data", True, transform=ToTensor(), downoad=True)
         else:
             print("data type is incorrect")
             raise NotImplementedError
-        
+
         if args.model == 'H':
             net = BetaVAE
         else:
             raise NotImplementedError('only support model H or B')
-        
+
         ## define network and optimizer
         self.net = net(self.out_dim,self.z_dim, self.nc).to(self.device)
 
@@ -121,14 +124,14 @@ class Solver(object):
             os.makedirs(self.output_dir, exist_ok=True)
 
         ##----------------------------------------
-        ## Step 1: finish code for data loader
+        ## Step 1: finish code for data loader - done I hope
         ##----------------------------------------
-        self.data_loader = 
-        
+        self.data_loader = torch.utils.data.DataLoader(training_data, batch_size=self.batch_size)
+
     def train(self):
         self.net_mode(train=True)
         out = False
-        
+
         pbar = tqdm(total=self.max_iter)
         pbar.update(self.global_iter)
         ## write log to log file
@@ -141,23 +144,23 @@ class Solver(object):
                 ##----------------------------------------
                 ## Step 2: feed image x into VAE network
                 ##----------------------------------------
-                x_recon, mu, logvar = 
+                x_recon, mu, logvar = model(x) #let's see if that works
                 ## then compute the recon loss and KL loss
-                recon_loss = 
-                total_kld, dim_wise_kld = 
-                
+                recon_loss =
+                total_kld, dim_wise_kld = kl_divergence(mu, logvar)
+
                 ##------------------------------------------------
                 ## Step 3: write code of loss/objective function
                 ##------------------------------------------------
-                vae_loss = 
+                vae_loss =
 
                 if self.global_iter % 200 ==0:
                     print("vae_loss:{} recon_loss:{} KL_loss:{}".format(vae_loss.item(),recon_loss.item(),total_kld.item()))
-                
+
                 ##------------------------------------------
                 ## Step 4: write code of back propagation
                 ##------------------------------------------
-                
+
 
                 ## visualize the images
                 if (self.global_iter) % self.save_step ==0:
@@ -167,19 +170,19 @@ class Solver(object):
                 if self.global_iter % self.save_step == 0:
                     self.save_checkpoint('last')
                     pbar.write('Saved checkpoint(iter:{})'.format(self.global_iter))
-                
+
                 if self.global_iter >= self.max_iter:
                     out = True
                     break
-        
+
         pbar.write("[Training Finished]")
         pbar.close()
-    
+
 
     def viz_traverse(self):
         self.net_mode(train=False)
         decoder = self.net.decoder
-        
+
         if self.save_output:
             output_dir = os.path.join(self.output_dir, str(self.global_iter))
             print("save test results: ", output_dir)
@@ -189,7 +192,7 @@ class Solver(object):
             ##-------------------------------------------------------------
             ## Step 5: randomly/uniformly generate z as the input of decoder
             ##-------------------------------------------------------------
-            z = 
+            z =
 
             ## get the ouput of reconstructed image
             sample = torch.sigmoid(decoder(z))
@@ -199,7 +202,7 @@ class Solver(object):
         ## switch back to model train
         self.net_mode(train=True)
 
-    
+
     def net_mode(self, train):
         if not isinstance(train, bool):
             raise('Only bool type is supported. True or False')
@@ -221,7 +224,7 @@ class Solver(object):
             torch.save(states, f)
         if not silent:
             print("=> saved checkpoint '{}' (iter {})".format(file_path, self.global_iter))
-            
+
 
     def load_checkpoint(self, filename):
         file_path = os.path.join(self.ckpt_dir, filename)
@@ -233,6 +236,3 @@ class Solver(object):
             print("=> loaded checkpoint '{} (iter {})'".format(file_path, self.global_iter))
         else:
             print("=> no checkpoint found at '{}'".format(file_path))
-            
-        
-            

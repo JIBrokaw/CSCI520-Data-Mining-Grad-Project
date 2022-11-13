@@ -192,7 +192,7 @@ class Solver(object):
             ##-------------------------------------------------------------
             ## Step 5: randomly/uniformly generate z as the input of decoder
             ##-------------------------------------------------------------
-            z =
+            z = torch.randn(self.batch_size,self.z_dim).to(self.device)
 
             ## get the ouput of reconstructed image
             sample = torch.sigmoid(decoder(z))

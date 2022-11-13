@@ -146,13 +146,13 @@ class Solver(object):
                 ##----------------------------------------
                 x_recon, mu, logvar = model(x) #let's see if that works
                 ## then compute the recon loss and KL loss
-                recon_loss =
+                recon_loss = reconstruction_loss(x, x_recon, self.decoder_dist)
                 total_kld, dim_wise_kld = kl_divergence(mu, logvar)
 
                 ##------------------------------------------------
                 ## Step 3: write code of loss/objective function
                 ##------------------------------------------------
-                vae_loss =
+                vae_loss = recon_loss - total_kld
 
                 if self.global_iter % 200 ==0:
                     print("vae_loss:{} recon_loss:{} KL_loss:{}".format(vae_loss.item(),recon_loss.item(),total_kld.item()))
@@ -160,7 +160,7 @@ class Solver(object):
                 ##------------------------------------------
                 ## Step 4: write code of back propagation
                 ##------------------------------------------
-
+                model.backward()
 
                 ## visualize the images
                 if (self.global_iter) % self.save_step ==0:

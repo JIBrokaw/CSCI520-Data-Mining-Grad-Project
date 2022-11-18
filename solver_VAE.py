@@ -123,7 +123,7 @@ class Solver(object):
         ##----------------------------------------
         ## Step 1: finish code for data loader
         ##----------------------------------------
-        self.data_loader return_data(args)
+        self.data_loader = return_data(args)
 
     def train(self):
         self.net_mode(train=True)

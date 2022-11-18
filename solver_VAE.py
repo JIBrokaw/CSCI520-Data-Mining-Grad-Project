@@ -82,15 +82,12 @@ class Solver(object):
         if args.dataset.lower() == 'mnist':
             self.nc = 1
             self.decoder_dist = 'bernoulli'
-            training_data = torchvision.datasets.MNIST("/.data", True, transform=ToTensor(), download=True)
         elif args.dataset.lower() == 'svhn':
             self.nc = 3
             self.decoder_dist = 'gaussian'
-            training_data = torchvision.datasets.SVHN("/.data", True, transform=ToTensor(), download=True)
         elif args.dataset.lower() == 'cifar10':
             self.nc = 3
             self.decoder_dist = 'gaussian'
-            training_data = torchvision.datasets.CIFAR10("/.data", True, transform=ToTensor(), downoad=True)
         else:
             print("data type is incorrect")
             raise NotImplementedError
@@ -124,9 +121,9 @@ class Solver(object):
             os.makedirs(self.output_dir, exist_ok=True)
 
         ##----------------------------------------
-        ## Step 1: finish code for data loader - done I hope
+        ## Step 1: finish code for data loader
         ##----------------------------------------
-        self.data_loader = torch.utils.data.DataLoader(training_data, batch_size=self.batch_size)
+        self.data_loader return_data(args)
 
     def train(self):
         self.net_mode(train=True)
@@ -144,7 +141,8 @@ class Solver(object):
                 ##----------------------------------------
                 ## Step 2: feed image x into VAE network
                 ##----------------------------------------
-                x_recon, mu, logvar = model(x) #let's see if that works
+                self.optim.zero_grad()
+                x_recon, mu, logvar = self.net(x)
                 ## then compute the recon loss and KL loss
                 recon_loss = reconstruction_loss(x, x_recon, self.decoder_dist)
                 total_kld, dim_wise_kld = kl_divergence(mu, logvar)
@@ -152,7 +150,7 @@ class Solver(object):
                 ##------------------------------------------------
                 ## Step 3: write code of loss/objective function
                 ##------------------------------------------------
-                vae_loss = recon_loss - total_kld
+                vae_loss = recon_loss + total_kld
 
                 if self.global_iter % 200 ==0:
                     print("vae_loss:{} recon_loss:{} KL_loss:{}".format(vae_loss.item(),recon_loss.item(),total_kld.item()))
@@ -160,7 +158,8 @@ class Solver(object):
                 ##------------------------------------------
                 ## Step 4: write code of back propagation
                 ##------------------------------------------
-                model.backward()
+                vae_loss.backward()
+                self.optim.step()
 
                 ## visualize the images
                 if (self.global_iter) % self.save_step ==0:

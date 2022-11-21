@@ -146,6 +146,7 @@ class Solver(object):
                 ## then compute the recon loss and KL loss
                 recon_loss = reconstruction_loss(x, x_recon, self.decoder_dist)
                 total_kld, dim_wise_kld = kl_divergence(mu, logvar)
+                total_kld *= 10
 
                 ##------------------------------------------------
                 ## Step 3: write code of loss/objective function

@@ -4,6 +4,7 @@ import argparse
 
 import numpy as np
 import torch
+import wandb
 
 from solver_VAE import Solver
 from utils import str2bool
@@ -16,13 +17,17 @@ def main(args):
     ## random seeds
     seed = args.seed
     use_cuda = torch.cuda.is_available() ## if have gpu or cpu
+    wandb.login()
+    wandb.init(project="CSCI780-VAE",name="VAE_1e6_z=15")
+    
     if use_cuda:
+        print("currently using GPU")
         device = torch.device('cuda', args.gpu)
         # torch.manual_seed(args.seed)
         # torch.cuda.manual_seed(args.seed)
     else:
         device = torch.device('cpu')
-        # print("----using CPU now----")
+        print("----using CPU now----")
     
     # np.random.seed(seed)
     net = Solver(args)

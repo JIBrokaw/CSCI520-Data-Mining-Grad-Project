@@ -13,6 +13,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torch.autograd import Variable
 from torchvision.utils import make_grid, save_image
+import wandb
 
 from utils import cuda, grid2gif
 from model import BetaVAE
@@ -155,7 +156,7 @@ class Solver(object):
 
                 if self.global_iter % 200 ==0:
                     print("vae_loss:{} recon_loss:{} KL_loss:{}".format(vae_loss.item(),recon_loss.item(),total_kld.item()))
-
+                    wandb.log({'vae_loss':vae_loss.item(),'recon_loss':recon_loss.item(),'total_kld':total_kld.item()})
                 ##------------------------------------------
                 ## Step 4: write code of back propagation
                 ##------------------------------------------
